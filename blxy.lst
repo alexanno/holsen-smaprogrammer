@@ -1,0 +1,338 @@
+                                                                        PAGE   1
+                                                                       08-20-93
+                                                                       14:05:04
+
+ Line#  Source Line          Microsoft FORTRAN Optimizing Compiler Version 5.00
+
+     1        PROGRAM BLXY
+#    2  C**********************************************************************
+     3  C     BEREGING AV PLANE KOORDINATER (X,Y) AV GEOGRAFISKE(B,l)
+     4  C     OG OMVENDT.
+     5  C     (X,Y) ER GAUSS-KRUGERSKE ELLER UTM-KOORDINATER.
+#    6  C**********************************************************************
+     7  
+     8        IMPLICIT LOGICAL (A-Z)
+     9  
+    10        REAL*8 A,B,BR,L,L1,BO,N,N1,T,A1,A2,A3,A4,A5
+    11      
+    12        REAL*8 X,Y,PI,RO,B1,B2,B3,B4,B5,A6,ET,ETF,NF,BF,G
+    13  
+    14        REAL*8 TF,K,K1,K2,K3,G1
+    15  
+    16        
+    17        INTEGER P,R,S
+    18     
+    19        
+    20        PI=DATAN(1.D0)*4.D0
+    21        RO=180.D0/PI
+    22  
+    23        WRITE(*,*)
+    24        WRITE(*,*)   '******************************************'
+    25        WRITE(*,*)   '**BEREGNING AV (X,Y) NèR (B,L) ER KJENT **'        
+    26        WRITE(*,*)   '** OG OMVENDT                           **'        
+    27        WRITE(*,*)   '**                                      **'        
+    28        WRITE(*,*)   '**          JON HOLSEN, APRIL 90        **'        
+    29        WRITE(*,*)   '**                IKO, NTH              **'        
+    30        WRITE(*,*)   '******************************************'
+    31        
+    32        WRITE(*,*) 'S SETTES LIK 0 FOR NGO-SYSTEM OG 1 FOR UTM'
+    33        WRITE(*,100) 'LEGG INN S:'  
+    34        READ(*,*) S
+    35        
+    36        WRITE(*,*)  'R SETTES LIK 0 NèR (B,L) ER GITT I MOTSATT FALL'
+    37        WRITE(*,*)  'SETTES R LIK 1'                                
+    38        WRITE(*,100) 'LEGG INN R:'
+    39        READ(*,*) R   
+    40        
+    41        WRITE(*,*) 'VALG AV ELLIPSOIDE.P SETTES LIK 1 FOR'
+    42        WRITE(*,*) 'NORSK BESSELS,LIK 2 FOR INTERNASJONAL'
+    43        WRITE(*,*) 'OG LIK 3 FOR WGS-84-ELLIPSOIDEN'
+    44        WRITE(*,100) 'LEGG INN P:'
+    45        READ(*,*)   P
+    46        
+    47        IF(P.EQ.1)THEN
+    48          A=6377492.018D0
+    49          B=6356173.509D0
+    50        ELSEIF(P.EQ.2)THEN
+    51          A=6378388.000D0
+    52          B=6356911.946D0
+    53        ELSEIF(P.EQ.3)THEN
+    54          A=6378137.000D0
+    55          B=6356752.314D0
+    56        ENDIF
+    57            
+    58             
+                                                                        PAGE   2
+                                                                       08-20-93
+                                                                       14:05:04
+
+ Line#  Source Line          Microsoft FORTRAN Optimizing Compiler Version 5.00
+
+    59        N=(A-B)/(A+B)
+    60        K=A/(N+1.D0)
+    61        K1=1.D0+N*N/4.D0+N**4.D0/64.D0
+    62        K2=(N-N*N*N/8.D0)*3.D0
+    63        K3=(N*N-(N**4.D0)*1/4.D0)*15.D0/8.D0
+    64             
+    65           
+    66        WRITE(*,100) 'LEGG INN  BREDDEN FOR X-AKSENS NULLPUNKT:'
+    67        READ(*,*) BO
+    68        WRITE(*,100) 'LEGG INN GEOGRAFISK LENGDE FOR X-AKSEN:'
+    69        READ(*,*) L1
+    70        L1=L1/RO
+    71  
+    72        BO=BO/RO
+    73                    
+    74        IF(R.EQ.1) GOTO 10
+    75        
+    76        WRITE(*,100) 'LEGG INN GEOGRAFISK BREDDE:'
+    77        READ(*,*) BR
+    78  
+    79        WRITE(*,100) 'LEGG INN GEOGRAFISK LENGDE:'
+    80        READ (*,*) L
+    81        L=L/RO
+    82  
+    83        BR=BR/RO
+    84        
+    85        L=L-L1
+    86                                           
+    87        
+    88       
+    89        WRITE(*,*) 'HER STARTER BEREGNINGEN MED B OG L SOM KJENT'
+    90  
+    91        ET=(A**2-B**2)/B**2
+    92   
+    93        ET=ET*DCOS(BR)**2
+    94        N1=(A**2)/(DSQRT(1.D0+ET)*B)
+    95        T =DTAN(BR)
+    96        A1=N1*DCOS(BR)
+    97        A2=-(N1*T*DCOS(BR)**2.D0)/2.D0
+    98        A3=-(N1*DCOS(BR)**3.D0)*(1.D0-T**2.D0+ET)/6.D0
+    99        A4=N1*T*DCOS(BR)**4.D0*(5.D0-T**2.D0+9*ET+4.D0*ET**2.D0)
+   100       &/24.D0
+   101        A6=N1*T*DCOS(BR)**6*(61.D0-58.D0*T**2+T**4+270*ET
+   102       &-330*ET*T**2.D0)/720
+   103                       
+   104        A5=N1*DCOS(BR)**5.D0*(5.D0-18.D0*T**2.D0+T**4.D0
+   105       &+14.D0*ET-58.D0*ET*T**2)/120  
+   106      
+   107        X=-A2*L**2.D0+A4*L**4.D0+A6*L**6.D0
+   108        Y= A1*L-A3*L**3+A5*L**5
+   109        
+   110              
+   111          CALL MERIDBUE (BR,BO,K,K1,K2,K3,G,G1,R,N)
+   112        
+   113       
+   114        X=X+G
+   115              
+   116        IF(S.EQ.1) THEN
+                                                                        PAGE   3
+                                                                       08-20-93
+                                                                       14:05:04
+
+ Line#  Source Line          Microsoft FORTRAN Optimizing Compiler Version 5.00
+
+   117          X=X*0.9996
+   118          Y=Y*0.9996+500000.D0
+   119        ENDIF
+   120                    
+   121        WRITE(*,110) 'X:',X
+   122        WRITE(*,*)
+   123        WRITE(*,110) 'Y:',Y
+   124        STOP  
+   125  
+   126  
+   127     10 WRITE(*,*) 'HER STARTER BEREGNINGEN MED KJENT X OG Y'
+   128  
+   129        WRITE(*,100) 'LEGG INN X:'
+   130        READ(*,*)   X
+   131        WRITE(*,100) 'LEGG INN Y:'
+   132        READ(*,*)    Y
+   133  
+   134        IF (S.EQ.1) THEN
+   135        X=X/0.9996
+   136        Y=(Y-500000.D0)/0.9996
+   137        ENDIF
+   138  
+   139        G=X
+   140        
+   141             CALL MERIDBUE(BF,BO,K,K1,K2,K3,G,G1,R,N)
+   142   
+   143        
+   144        ETF=(A-B)*(A+B)/B**2.D0
+   145        ETF=ETF*COS(BF)**2.D0
+   146        
+   147        NF =A**2.D0/(DSQRT(1.D0 +ETF)*B)
+   148        TF =DTAN(BF)
+   149        B1=1.D0/(NF*DCOS(BF))
+   150        B2=TF*(1.D0+ETF)/(2.D0*NF**2.D0) 
+   151        B3=(1.D0+2.D0*TF**2.D0+ETF)/(6.D0*NF**3.D0*DCOS(BF))
+   152        B4=TF*(5.D0+3.D0*TF**2.D0+6*ETF-6.D0*ETF*TF**2.D0)
+   153        B4=B4/(24.D0*NF**4.D0)   
+   154              
+   155        B5=(5.D0+28.D0*TF**2.D0+24.D0*TF**4.D0)
+   156        B5=B5/(120.D0*NF**5.D0*DCOS(BF))
+   157                            
+   158        BR=BF+(-B2*Y**2.D0+B4*Y**4.D0)
+   159        L =(B1*Y-B3*Y**3.D0+B5*Y**5.D0)
+   160        L=L+L1
+   161        L=L*RO
+   162        BR=BR*RO
+   163        WRITE(*,100) 'GEOGRAFISKE KOORDINATER'
+   164        WRITE(*,*)
+   165        WRITE(*,120) 'B:',BR
+   166        WRITE(*,*)
+   167        WRITE(*,120) 'L:',L
+   168  
+   169    100 FORMAT(1X,A,$)
+   170    120 FORMAT(1X,A,F13.9)
+   171    110 FORMAT(1X,A,F13.4)
+   172  
+   173        STOP
+   174        
+                                                                        PAGE   4
+                                                                       08-20-93
+                                                                       14:05:04
+
+ Line#  Source Line          Microsoft FORTRAN Optimizing Compiler Version 5.00
+
+   175        END
+
+
+main  Local Symbols
+
+Name                      Class   Type              Size   Offset  
+
+A . . . . . . . . . . . . local   REAL*8               8    0002
+B . . . . . . . . . . . . local   REAL*8               8    000a
+G . . . . . . . . . . . . local   REAL*8               8    0012
+BF. . . . . . . . . . . . local   REAL*8               8    001a
+K . . . . . . . . . . . . local   REAL*8               8    0022
+L . . . . . . . . . . . . local   REAL*8               8    002a
+N . . . . . . . . . . . . local   REAL*8               8    0032
+P . . . . . . . . . . . . local   INTEGER*4            4    003a
+BO. . . . . . . . . . . . local   REAL*8               8    003e
+R . . . . . . . . . . . . local   INTEGER*4            4    0046
+S . . . . . . . . . . . . local   INTEGER*4            4    004a
+NF. . . . . . . . . . . . local   REAL*8               8    004e
+T . . . . . . . . . . . . local   REAL*8               8    0056
+BR. . . . . . . . . . . . local   REAL*8               8    005e
+X . . . . . . . . . . . . local   REAL*8               8    0066
+ET. . . . . . . . . . . . local   REAL*8               8    006e
+PI. . . . . . . . . . . . local   REAL*8               8    0076
+Y . . . . . . . . . . . . local   REAL*8               8    007e
+TF. . . . . . . . . . . . local   REAL*8               8    0086
+ETF . . . . . . . . . . . local   REAL*8               8    008e
+RO. . . . . . . . . . . . local   REAL*8               8    0096
+A1. . . . . . . . . . . . local   REAL*8               8    009e
+B1. . . . . . . . . . . . local   REAL*8               8    00a6
+A2. . . . . . . . . . . . local   REAL*8               8    00ae
+B2. . . . . . . . . . . . local   REAL*8               8    00b6
+A3. . . . . . . . . . . . local   REAL*8               8    00be
+B3. . . . . . . . . . . . local   REAL*8               8    00c6
+A4. . . . . . . . . . . . local   REAL*8               8    00ce
+B4. . . . . . . . . . . . local   REAL*8               8    00d6
+A5. . . . . . . . . . . . local   REAL*8               8    00de
+A6. . . . . . . . . . . . local   REAL*8               8    00e6
+B5. . . . . . . . . . . . local   REAL*8               8    00ee
+G1. . . . . . . . . . . . local   REAL*8               8    00f6
+K1. . . . . . . . . . . . local   REAL*8               8    00fe
+K2. . . . . . . . . . . . local   REAL*8               8    0106
+L1. . . . . . . . . . . . local   REAL*8               8    010e
+K3. . . . . . . . . . . . local   REAL*8               8    0116
+N1. . . . . . . . . . . . local   REAL*8               8    011e
+
+   176  
+   177  
+   178  
+   179        SUBROUTINE MERIDBUE(BR,BO,K,K1,K2,K3,G,G1,R,N)
+   180        
+   181        INTEGER R
+   182              
+   183        REAL*8 BR,BO,K,K1,K2,K3,G1,DB,BM,G,N
+   184        G1=0
+   185        DB=0
+   186        BM=0
+   187        IF(R.EQ.0)THEN
+                                                                        PAGE   5
+                                                                       08-20-93
+                                                                       14:05:04
+
+ Line#  Source Line          Microsoft FORTRAN Optimizing Compiler Version 5.00
+
+   188          DB=BR-BO
+   189          BM=BR-DB/2.D0
+   190             
+   191        ENDIF
+   192          
+   193            
+   194     30 IF(R.EQ.1) THEN
+   195        DB= DB+(G-G1)/(K*K1)
+   196        BM=BO+DB/2.D0
+   197        ENDIF
+   198        
+   199        G1 = K*(K1*DB-K2*DCOS(2.D0*BM)*DSIN(DB)+K3*DCOS(4.D0*BM)
+   200       &     *DSIN(2.D0*DB))
+   201        
+   202        G1 = G1- K*(N**3*DCOS(6.D0*BM)*DSIN(3.D0*DB))*35.D0/24.D0
+   203        
+   204        G1 = G1+ K*(N**4.D0*DCOS(8*BM)*DSIN(4*DB)*315.D0)/256.D0
+   205        
+   206        IF(R.EQ.0) THEN
+   207          G=G1
+   208          RETURN
+   209        ENDIF
+   210        
+   211        IF(R.EQ.1.AND.ABS(G-G1).GT.1D-4) THEN
+   212          GOTO 30
+   213        ELSE
+   214          BR=BO+DB
+   215           G=G1    
+   216  
+   217        RETURN
+   218        ENDIF
+   219  
+   220        END
+
+
+MERIDBUE  Local Symbols
+
+Name                      Class   Type              Size   Offset  
+
+N . . . . . . . . . . . . param                             0006
+R . . . . . . . . . . . . param                             000a
+G1. . . . . . . . . . . . param                             000e
+G . . . . . . . . . . . . param                             0012
+K3. . . . . . . . . . . . param                             0016
+K2. . . . . . . . . . . . param                             001a
+K1. . . . . . . . . . . . param                             001e
+K . . . . . . . . . . . . param                             0022
+BO. . . . . . . . . . . . param                             0026
+BR. . . . . . . . . . . . param                             002a
+DB. . . . . . . . . . . . local   REAL*8               8    0126
+BM. . . . . . . . . . . . local   REAL*8               8    012e
+
+
+Global Symbols
+
+Name                      Class   Type              Size   Offset  
+
+MERIDBUE. . . . . . . . . FSUBRT  ***                ***    0b57
+                                                                        PAGE   6
+                                                                       08-20-93
+                                                                       14:05:04
+
+                             Microsoft FORTRAN Optimizing Compiler Version 5.00
+
+
+Global Symbols
+
+Name                      Class   Type              Size   Offset  
+
+main. . . . . . . . . . . FSUBRT  ***                ***    0000
+
+Code size = 0e63 (3683)
+Data size = 057b (1403)
+Bss size  = 0136 (310)
+
+No errors detected

@@ -1,0 +1,154 @@
+                                                                        PAGE   1
+                                                                       04-19-93
+                                                                       11:16:55
+
+ Line#  Source Line          Microsoft FORTRAN Optimizing Compiler Version 5.00
+
+     1        PROGRAM KRRAD
+     2  C*****************************************************************
+     3  C     BEREGNING AV KRUMNINGSRADIER.M,N,MR,RA  
+     4  C     MASKINEN SPùR ETTER BR=BREDDE OG AS=ASIMUT  
+     5  C*****************************************************************
+     6        IMPLICIT LOGICAL (A-Z)
+     7  
+     8        INTEGER P
+     9        
+    10        REAL*8  RO, A, B, AR,BR, E, M, N, MR, RA, PI
+    11  
+    12        PI = DATAN(1.D0)*4.D0
+    13  
+    14        RO=180.D0/PI
+    15  
+    16        WRITE(*,*)  
+    17        WRITE(*,*)' ************************************************'
+    18        WRITE(*,*)' **       BEREGNING AV KRUMNINGSRADIER         **'
+    19        WRITE(*,*)' **                                            **'
+    20        WRITE(*,*)' **                        J.H. April-90       **'
+    21        WRITE(*,*)' ************************************************'
+    22        WRITE(*,*)  
+    23  
+    24        WRITE(*,*) 'VALG AV ELLIPSOIDE.P SETTES LIK 1 FOR :'
+    25        WRITE(*,*) 'NORSK BESSELS ,LIK 2 FOR INTERNASJONAL:'
+    26        WRITE(*,*) 'OG LIK 3 FOR FOR WGS-84-ELLIPSOIDEN:'
+    27        WRITE(*,*) 'LEGG INN P:'
+    28        READ(*,*) P
+    29            
+    30        WRITE(*,100) ' Legg inn bredde for punkt :'
+    31        READ(*,*) BR
+    32        BR=BR/RO
+    33  
+    34        WRITE(*,100) ' Legg inn asimut for punkt :'
+    35        READ(*,*) AR
+    36  
+    37  C---- Beregning starter her
+    38        
+    39        CALL AKSER(P,A,B)
+    40              
+    41        AR=AR/RO
+    42        E=(A**2.D0-B**2.D0)/A**2.D0
+    43        M=(DSIN(BR))**2
+    44        M =DSQRT(1.D0-E*M)
+    45                               
+    46        N =A/M
+    47        M =(1.D0-E)*A/M**3.D0
+    48                                    
+    49               		MR = DSQRT(M*N)		 
+    50        RA=N*M/( N*DCOS(AR)**2 + M*DSIN(AR)**2 )
+    51  
+    52        WRITE(*,*)  
+    53        WRITE(*,110)  ' Meridiankrumningsradius M  = ', M
+    54        WRITE(*,110)  ' Normalkrumningsradius   N  = ', N
+    55        WRITE(*,110)  ' Midlere krumningsradius MR = ', MR
+    56        WRITE(*,110)  ' Krumningsradius i retning asimut AR = ', RA
+    57  
+    58    100 FORMAT ( 1X,A,$ )
+                                                                        PAGE   2
+                                                                       04-19-93
+                                                                       11:16:55
+
+ Line#  Source Line          Microsoft FORTRAN Optimizing Compiler Version 5.00
+
+    59    110 FORMAT ( 1X,A,F12.3 )
+    60        STOP
+    61   
+    62        END
+
+
+main  Local Symbols
+
+Name                      Class   Type              Size   Offset  
+
+A . . . . . . . . . . . . local   REAL*8               8    0002
+B . . . . . . . . . . . . local   REAL*8               8    000a
+E . . . . . . . . . . . . local   REAL*8               8    0012
+M . . . . . . . . . . . . local   REAL*8               8    001a
+N . . . . . . . . . . . . local   REAL*8               8    0022
+P . . . . . . . . . . . . local   INTEGER*4            4    002a
+RA. . . . . . . . . . . . local   REAL*8               8    002e
+AR. . . . . . . . . . . . local   REAL*8               8    0036
+BR. . . . . . . . . . . . local   REAL*8               8    003e
+PI. . . . . . . . . . . . local   REAL*8               8    0046
+MR. . . . . . . . . . . . local   REAL*8               8    004e
+RO. . . . . . . . . . . . local   REAL*8               8    0056
+
+    63        
+    64  
+    65  
+    66  
+    67  
+    68        SUBROUTINE AKSER(P,A,B)
+    69  
+    70        INTEGER P
+    71        REAL*8 A,B      
+    72             
+    73        IF(P.EQ.1)THEN
+    74          A=6377492.018D0
+    75          B=6356173.509D0
+    76        RETURN
+    77        
+    78        ELSEIF(P.EQ.2)THEN
+    79          A =6378388.000D0
+    80          B =6356911.946D0    
+    81        RETURN
+    82    
+    83        ELSEIF(P.EQ.3)THEN
+    84          A=6378137.000D0
+    85          B=6356752.314D0
+    86        RETURN
+    87        
+    88        ENDIF
+    89      
+    90        END
+
+AKSER  Local Symbols
+
+Name                      Class   Type              Size   Offset  
+
+B . . . . . . . . . . . . param                             0006
+A . . . . . . . . . . . . param                             000a
+                                                                        PAGE   3
+                                                                       04-19-93
+                                                                       11:16:55
+
+                             Microsoft FORTRAN Optimizing Compiler Version 5.00
+
+
+AKSER  Local Symbols
+
+Name                      Class   Type              Size   Offset  
+
+P . . . . . . . . . . . . param                             000e
+
+
+Global Symbols
+
+Name                      Class   Type              Size   Offset  
+
+AKSER . . . . . . . . . . FSUBRT  ***                ***    02b0
+main. . . . . . . . . . . FSUBRT  ***                ***    0000
+
+Code size = 0337 (823)
+Data size = 032b (811)
+Bss size  = 005e (94)
+
+No errors detected

@@ -1,0 +1,434 @@
+                                                                        PAGE   1
+                                                                       10-31-93
+                                                                       23:01:46
+
+ Line#  Source Line          Microsoft FORTRAN Optimizing Compiler Version 5.00
+
+     1                   
+     2            
+     3        PROGRAM LGEO2
+     4  
+     5  
+     6  
+     7  
+     8  C*******************************************************************
+     9  C     WRITE(*,*) GEOGRAFISKE KOORDINATER ER GITT FOR TO PUNKTER 
+    10  C     WRITE(*,*) 1 OG 2,(B1,L1) OG(B2,L2).BEREGN GEODETISK LINJE
+    11  C     WRITE(*,*) FRA 1 TIL 2 OG ASIMUT I PUNKT 1 OG I PUNKT 2.
+    12  C     WRITE(*,*) GJELDER OGSè FOR MEGET LANGE AVSTANDER
+    13  C     WRITE(*,*)       J.H. AUGUST 90
+    14  C*******************************************************************
+    15          
+    16        IMPLICIT LOGICAL(A-Z)
+    17        INTEGER P,F
+    18  
+    19        REAL*8 A,B,B1,L1,B2,L2,A1,A2,DS,S1,S2,RB0,RB1,RB2,RB3,SI1
+    20        REAL*8 SI2,DSI,E,PI,RO,W0,DL,DLA,N1,R,R1,R2,R3,B0
+    21        REAL*8 C,D1,D2,D3,VINKELTR,K1,T,N,LA1,LA2,D                      
+    22  
+    23        PI=DATAN(1)*4.D0
+    24        RO=PI/180.D0
+    25              
+    26        WRITE(*,*)'LEGG INN B1,L1,B2,L2 :'                    
+    27        READ(*,*) B1,L1,B2,L2 
+    28        B1=B1*RO
+    29        L1=L1*RO
+    30        B2=B2*RO
+    31        L2=L2*RO 
+    32                  
+    33        
+    34        WRITE(*,*) 'VALG AV ELLIPSOIDE.P SETTES LIK 1 FOR :'
+    35        WRITE(*,*) 'NORSK BESSELS ,LIK 2 FOR INTERNASJONAL:'
+    36        WRITE(*,*) 'OG LIK 3 FOR FOR WGS-84-ELLIPSOIDEN:'
+    37        WRITE(*,*) 'LEGG INN P:'
+    38        READ(*,*) P
+    39        
+    40                   CALL AKSER(P,A,B)
+    41           
+    42        RB1=VINKELTR(B,A,B1)
+    43        RB2=VINKELTR(B,A,B2)
+    44        RB3=(RB1+RB2)/2.D0
+    45        E=(A-B)*(A+B)/A**2.D0
+    46        DL=L2-L1
+    47       
+    48        
+    49        IF(ABS(DL).LT.2.E-8) THEN
+    50               WRITE(*,*) 'BRUK HELLER ET MERIDIANBUEPROGRAM'
+    51        
+    52        D=PI-ABS(DL)
+    53        GOTO 40      
+    54        
+    55        ENDIF
+    56        
+    57        IF(DL.LT.-PI) THEN
+    58            DL=DL +PI*2.D0
+                                                                        PAGE   2
+                                                                       10-31-93
+                                                                       23:01:46
+
+ Line#  Source Line          Microsoft FORTRAN Optimizing Compiler Version 5.00
+
+    59        ELSEIF (DL.GT.PI) THEN
+    60            DL=DL-PI*2.D0
+    61        ENDIF                     
+    62        
+    63        DLA=DL/SQRT(1-E*(DCOS(RB3))**2.D0)
+    64        
+    65        F=0
+    66        
+    67  
+    68  C*****BEREGNING AV VERDIER FOR A1,RB0,SI1 OG SI2.
+    69  
+    70     11 T=DTAN(RB1)*DCOS(DLA)-DTAN(RB2)
+    71        N=DTAN(RB1)*DSIN(DLA)
+    72              CALL VINKEL(LA1,T,N)
+    73        T=-DTAN(RB2)*COS(DLA)+DTAN(RB1) 
+    74        N=DTAN(RB2)*SIN(DLA)    
+    75              CALL VINKEL(LA2,T,N)
+    76             
+    77        
+    78        T= DTAN(RB1)
+    79        N=DCOS(LA1)
+    80              CALL VINKEL(RB0,T,N)
+    81                
+    82        T=DCOS(RB0)*DTAN(LA1)
+    83        N=1.D0
+    84              CALL VINKEL(SI1,T,N)
+    85        T= DCOS(RB0)*DTAN(LA2)
+    86        N=1.D0
+    87              CALL VINKEL(SI2,T,N)
+    88        IF(SI2.LT.SI1) THEN
+    89              SI2=SI2+PI*2.D0
+    90        ENDIF
+    91        
+    92        IF(B2.LT.0) THEN
+    93             SI2=SI2-PI
+    94        ENDIF
+    95        
+    96        IF(B1.LT.0) THEN
+    97             SI2=SI2-PI
+    98        ENDIF
+    99        
+   100        F=F+1
+   101                                   
+   102        DSI=SI2-SI1      
+   103        DLA=LA2-LA1
+   104        IF(F.GT.4) THEN
+   105             GOTO 12
+   106        ENDIF
+   107  C******BEREGNING AV DLA,FRA 1 TIL 2
+   108  
+   109        B0=VINKELTR(A,B,RB0)
+   110        W0=SQRT(1-E*(DSIN(B0))**2.D0)
+   111        K1=(1-W0)/(1+W0)
+   112        N1=(A-B)/(A+B)      
+   113        R=E*DCOS(RB0)/2.D0
+   114        R1=(1.D0+N1-K1/2.D0-(K1**2.D0)/4.D0)
+   115        R2=K1/4.D0
+   116        R3=(K1**2.D0)/16.D0
+                                                                        PAGE   3
+                                                                       10-31-93
+                                                                       23:01:46
+
+ Line#  Source Line          Microsoft FORTRAN Optimizing Compiler Version 5.00
+
+   117        DLA=DL+R*(R1*DSI-R2*(DSIN(2.D0*SI2)-DSIN(2.D0*SI1)))
+   118        DLA=DLA+R*R3*(DSIN(4*SI2)-DSIN(4*SI1))  
+   119              GOTO 11  
+   120  
+   121  
+   122  C******BEREGNING AV S1,S2 OG DS
+   123  
+   124           
+   125     12 C=B*(1.D0+K1**2.D0/4.D0)/(1.D0-K1)
+   126        D1=(K1/2.D0-(3.D0*K1**3.D0)/16.D0)
+   127        D2=(K1**2.D0)/16.D0
+   128        D3=(K1**3.D0)/48.D0
+   129        
+   130        CALL AVSTAND(C,D1,D2,D3,S1,SI1)
+   131        CALL AVSTAND(C,D1,D2,D3,S2,SI2)
+   132        DS=S2-S1
+   133                
+   134        
+   135        T=1
+   136        N=-DSIN(SI1)*DTAN(RB0)
+   137               CALL VINKEL(A1,T,N)
+   138        T=1
+   139        N=-DSIN(SI2)*DTAN(RB0)
+   140               CALL VINKEL(A2,T,N)
+   141        
+   142        IF(DS.LT.0.D0)THEN
+   143               DS=-DS
+   144        ENDIF
+   145        
+   146        RB0=RB0/RO
+   147        LA1=LA1/RO
+   148        LA2=LA2/RO
+   149        SI1=SI1/RO
+   150        SI2=SI2/RO
+   151        A1=A1/RO
+   152        A2=A2/RO
+   153        WRITE(*,*) RB0
+   154        WRITE(*,*) LA1,LA2
+   155        WRITE(*,*) SI1,SI2
+   156        WRITE(*,*) A1,A2  
+   157        A1=A1*RO
+   158        A2=A2*RO
+   159   
+   160        IF(DL.GT.0.D0) THEN
+   161              A2=A2+PI
+   162        ELSEIF(DL.LT.0.D0) THEN
+   163              A1=A1+PI
+   164        ENDIF
+   165        
+   166           
+   167        A1=A1/RO
+   168        A2=A2/RO
+   169  
+   170        WRITE(*,*)'ASIMUT FRA 1 TIL 2 OG FRA 2 TIL 1,I FORHOLD'
+   171        WRITE(*,*)'TIL NORD OGSè Pè DEN SYDLIGE HALVELLIPSOIDE'
+   172        WRITE(*,110)'A1:',A1
+   173  
+   174        WRITE(*,110)'A2:',A2
+                                                                        PAGE   4
+                                                                       10-31-93
+                                                                       23:01:46
+
+ Line#  Source Line          Microsoft FORTRAN Optimizing Compiler Version 5.00
+
+   175        WRITE(*,*)'GEODETISK LINJE FRA 1 TIL 2:'
+   176        WRITE(*,120)'S:',DS
+   177  
+   178    
+   179    100 FORMAT(1X,A,$)
+   180    110 FORMAT(1X,A,F14.9)
+   181    120 FORMAT(1X,A,F12.3)    
+   182    
+   183     40 STOP
+   184  
+   185        END
+
+
+main  Local Symbols
+
+Name                      Class   Type              Size   Offset  
+
+A . . . . . . . . . . . . local   REAL*8               8    0002
+B . . . . . . . . . . . . local   REAL*8               8    000a
+C . . . . . . . . . . . . local   REAL*8               8    0012
+R1. . . . . . . . . . . . local   REAL*8               8    001a
+D . . . . . . . . . . . . local   REAL*8               8    0022
+R2. . . . . . . . . . . . local   REAL*8               8    002a
+RB0 . . . . . . . . . . . local   REAL*8               8    0032
+S1. . . . . . . . . . . . local   REAL*8               8    003a
+R3. . . . . . . . . . . . local   REAL*8               8    0042
+E . . . . . . . . . . . . local   REAL*8               8    004a
+RB1 . . . . . . . . . . . local   REAL*8               8    0052
+S2. . . . . . . . . . . . local   REAL*8               8    005a
+RB2 . . . . . . . . . . . local   REAL*8               8    0062
+F . . . . . . . . . . . . local   INTEGER*4            4    006a
+W0. . . . . . . . . . . . local   REAL*8               8    006e
+RB3 . . . . . . . . . . . local   REAL*8               8    0076
+SI1 . . . . . . . . . . . local   REAL*8               8    007e
+N . . . . . . . . . . . . local   REAL*8               8    0086
+SI2 . . . . . . . . . . . local   REAL*8               8    008e
+DL. . . . . . . . . . . . local   REAL*8               8    0096
+P . . . . . . . . . . . . local   INTEGER*4            4    009e
+DLA . . . . . . . . . . . local   REAL*8               8    00a2
+R . . . . . . . . . . . . local   REAL*8               8    00aa
+T . . . . . . . . . . . . local   REAL*8               8    00b2
+DS. . . . . . . . . . . . local   REAL*8               8    00ba
+PI. . . . . . . . . . . . local   REAL*8               8    00c2
+DSI . . . . . . . . . . . local   REAL*8               8    00ca
+RO. . . . . . . . . . . . local   REAL*8               8    00d2
+B0. . . . . . . . . . . . local   REAL*8               8    00da
+A1. . . . . . . . . . . . local   REAL*8               8    00e2
+A2. . . . . . . . . . . . local   REAL*8               8    00ea
+B1. . . . . . . . . . . . local   REAL*8               8    00f2
+B2. . . . . . . . . . . . local   REAL*8               8    00fa
+D1. . . . . . . . . . . . local   REAL*8               8    0102
+D2. . . . . . . . . . . . local   REAL*8               8    010a
+D3. . . . . . . . . . . . local   REAL*8               8    0112
+K1. . . . . . . . . . . . local   REAL*8               8    011a
+L1. . . . . . . . . . . . local   REAL*8               8    0122
+LA1 . . . . . . . . . . . local   REAL*8               8    012a
+L2. . . . . . . . . . . . local   REAL*8               8    0132
+LA2 . . . . . . . . . . . local   REAL*8               8    013a
+                                                                        PAGE   5
+                                                                       10-31-93
+                                                                       23:01:46
+
+                             Microsoft FORTRAN Optimizing Compiler Version 5.00
+
+
+main  Local Symbols
+
+Name                      Class   Type              Size   Offset  
+
+N1. . . . . . . . . . . . local   REAL*8               8    0142
+
+   186                 SUBROUTINE AKSER (P,A,B)
+   187        
+   188        INTEGER P
+   189        REAL*8 A,B      
+   190                             
+   191        IF(P.EQ.1)THEN
+   192          A=6377492.018D0
+   193          B=6356173.509D0
+   194                  RETURN
+   195        
+   196                  ELSEIF(P.EQ.2)THEN
+   197          A =6378388.000D0
+   198          B =6356911.946D0    
+   199                  RETURN
+   200    
+   201                  ELSEIF(P.EQ.3)THEN
+   202          A=6378137.000D0
+   203          B=6356752.314D0
+   204                  RETURN
+   205        
+   206        ENDIF
+   207      
+   208        END
+
+
+AKSER  Local Symbols
+
+Name                      Class   Type              Size   Offset  
+
+B . . . . . . . . . . . . param                             0006
+A . . . . . . . . . . . . param                             000a
+P . . . . . . . . . . . . param                             000e
+
+   209  
+   210  
+   211                  SUBROUTINE AVSTAND(C,D1,D2,D3,S1,SI)
+   212  
+   213        REAL*8 C,D1,D2,D3,S1,SI
+   214  
+   215        S1=C*(SI+D1*DSIN(2.D0*SI)-D2*DSIN(4.D0*SI)+D3*DSIN(6*SI))
+   216  
+   217        RETURN
+   218        END
+
+
+AVSTAND  Local Symbols
+
+Name                      Class   Type              Size   Offset  
+
+SI. . . . . . . . . . . . param                             0006
+S1. . . . . . . . . . . . param                             000a
+                                                                        PAGE   6
+                                                                       10-31-93
+                                                                       23:01:46
+
+                             Microsoft FORTRAN Optimizing Compiler Version 5.00
+
+
+AVSTAND  Local Symbols
+
+Name                      Class   Type              Size   Offset  
+
+D3. . . . . . . . . . . . param                             000e
+D2. . . . . . . . . . . . param                             0012
+D1. . . . . . . . . . . . param                             0016
+C . . . . . . . . . . . . param                             001a
+
+   219        
+   220        
+   221                  SUBROUTINE VINKEL(A1,T,N)
+   222        
+   223        REAL*8 A1,T,N,PI
+   224               PI=DATAN(1)*4.D0
+   225        IF(ABS(T).LT.5D-9.AND.N.GT.0)THEN
+   226               A1=0
+   227               RETURN
+   228        ELSEIF(T.GT.0.AND.ABS(N).LT.5D-9)THEN
+   229               A1=PI/2.D0
+   230               RETURN
+   231        ELSEIF(T.LT.0.AND.ABS(N).LT.5D-9)THEN
+   232               A1=1.5D0*PI
+   233  
+   234               RETURN
+   235        ELSEIF(ABS(T).LT.5D-9.AND.N.LT.0)THEN
+   236               A1=PI
+   237               RETURN
+   238        ENDIF
+   239               
+   240        A1=DATAN(T/N)
+   241        
+   242        IF(T.GT.0.AND.N.GT.0)THEN
+   243           A1=A1            
+   244        RETURN
+   245        ELSEIF(T.GT.0.AND.N.LT.0)THEN
+   246        
+   247           A1=A1+PI
+   248        RETURN
+   249        ELSEIF(T.LT.0.AND.N.LT.0)THEN
+   250           A1=A1+PI
+   251        RETURN
+   252                       
+   253        ELSE
+   254           A1=A1+PI*2.D0
+   255        RETURN
+   256        
+   257        ENDIF
+   258                 
+   259        END
+
+
+VINKEL  Local Symbols
+
+Name                      Class   Type              Size   Offset  
+
+N . . . . . . . . . . . . param                             0006
+                                                                        PAGE   7
+                                                                       10-31-93
+                                                                       23:01:46
+
+                             Microsoft FORTRAN Optimizing Compiler Version 5.00
+
+
+VINKEL  Local Symbols
+
+Name                      Class   Type              Size   Offset  
+
+T . . . . . . . . . . . . param                             000a
+A1. . . . . . . . . . . . param                             000e
+PI. . . . . . . . . . . . local   REAL*8               8    014a
+
+   260  
+   261        REAL*8 FUNCTION VINKELTR(A,B,V)
+   262        REAL*8 A,B,V
+   263  
+   264               VINKELTR=DATAN(A*TAN(V)/B)
+   265        
+   266        RETURN
+   267        
+   268        END
+
+VINKELTR  Local Symbols
+
+Name                      Class   Type              Size   Offset  
+
+VINKELTR. . . . . . . . . param                             0006
+V . . . . . . . . . . . . param                             0008
+B . . . . . . . . . . . . param                             000c
+A . . . . . . . . . . . . param                             0010
+
+
+Global Symbols
+
+Name                      Class   Type              Size   Offset  
+
+AKSER . . . . . . . . . . FSUBRT  ***                ***    095e
+AVSTAND . . . . . . . . . FSUBRT  ***                ***    09e5
+VINKEL. . . . . . . . . . FSUBRT  ***                ***    0a78
+VINKELTR. . . . . . . . . FFUNCT  REAL*8             ***    0cc7
+main. . . . . . . . . . . FSUBRT  ***                ***    0000
+
+Code size = 0cfe (3326)
+Data size = 026d (621)
+Bss size  = 0152 (338)
+
+No errors detected
