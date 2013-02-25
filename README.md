@@ -8,3 +8,5 @@ Kjente porter er:
  * Kun 1. og 2. geodetiske oppgave (direkte og inverse)
 
 Si gjerne i fra hvis du porter programmene over til andre språk eller kompilerer til 64 bit / moderne Fortran.
+
+Lisens? Snakk med eier: http://www.ntnu.no/web/bat/veg-og-transport
