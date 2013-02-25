@@ -5,6 +5,6 @@ Holsen's småprogrammer for utregninger innenfor geodesi. Skrevet i tidlig Fortr
 
 Kjente porter er:
 * GeoLine (Java): http://geomatikk.ntnu.no/projects/prosjekter/geoline/
-** Kun 1. og 2. geodetiske oppgave (direkte og inverse)
+ * Kun 1. og 2. geodetiske oppgave (direkte og inverse)
 
 Si gjerne i fra hvis du porter programmene over til andre språk eller kompilerer til 64 bit / moderne Fortran.
